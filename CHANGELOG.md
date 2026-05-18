@@ -19,6 +19,19 @@
 - **版本管理**：新增 `VERSION` 文件（当前 0.1.0）为唯一版本源，语义化版本号。Makefile 构建时通过 `-ldflags "-X main.Version=..."` 注入版本号。
 - **Git 工作流**：会话末由用户决定提交时机，发布时创建 annotated tag 并推送。
 
+### 安全
+
+- **密钥泄漏修复**：GitGuardian 告警后，清理 git 全量历史中的 DeepSeek API key 和虚拟 key。从跟踪中移除 `data/` `build/` `tmp/` 等构建产物目录。
+- **环境变量注入**：`config.go` 新增 `MAGIC_API_KEY` / `JWT_SECRET` 环境变量覆盖，优先级高于配置文件。`config.yaml` 恢复托管（占位符），真实密钥只在服务器环境变量中存在。
+- **.gitignore**：排除 `config.test.yaml` `data/` `tmp/` `build/` `env`，保留 `config.yaml` `env.example` 托管。
+- **系统部署**：新增 `env.example` 模板，systemd 改用 `EnvironmentFile=` 加载环境文件，无需编辑 service。Makefile 开发命令增加 `-e MAGIC_API_KEY -e JWT_SECRET` 传递宿主环境变量。Dockerfile 补充版本号注入。
+
+### Bug 修复
+
+- **JWT 占位符哨兵不匹配**：`config.go` 改为 `strings.Contains` 兜底所有占位符变体，防止 git 中可见的默认 JWT 密钥被用作运行时密钥。
+- **README 变量名不一致**：`ANTHROPIC_API_KEY` → `ANTHROPIC_AUTH_TOKEN`，与前端 UI 模板统一。
+- **admin.html onclick 注入**：新增 `escJS()` 函数，`'` 用 `\x27` 转义而非 HTML 实体，修复用户名在 onclick JS 字符串中的注入向量。
+
 ## 2026-05-17
 
 ### Bug 修复（代码审查批次）

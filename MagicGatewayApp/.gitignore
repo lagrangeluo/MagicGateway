@@ -1,6 +1,6 @@
 .go-cache/
-config.yaml
 config.test.yaml
+env
 data/
 tmp/
 build/

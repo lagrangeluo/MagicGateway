@@ -11,8 +11,9 @@ RUN go mod download
 COPY . .
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
+ARG VERSION=dev
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
-    go build -ldflags="-s -w" -o gateway .
+    go build -ldflags="-s -w -X main.Version=$VERSION" -o gateway .
 
 # ---- Runtime stage ----
 FROM alpine:3.20

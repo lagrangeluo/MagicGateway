@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -58,15 +59,23 @@ func Load(path string) (*Config, error) {
 		return nil, fmt.Errorf("parse config: %w", err)
 	}
 
-	if cfg.Server.JWTSecret == "" || cfg.Server.JWTSecret == "change-me-to-a-random-string" {
-		return nil, fmt.Errorf("server.jwt_secret must be set to a random string (not the default)")
+	// Environment variable overrides — secrets should never be in config files.
+	if v := os.Getenv("MAGIC_API_KEY"); v != "" {
+		cfg.DeepSeek.APIKey = v
+	}
+	if v := os.Getenv("JWT_SECRET"); v != "" {
+		cfg.Server.JWTSecret = v
+	}
+
+	if cfg.Server.JWTSecret == "" || strings.Contains(cfg.Server.JWTSecret, "change-me-to-a-random") {
+		return nil, fmt.Errorf("server.jwt_secret must be set (via config or JWT_SECRET env)")
 	}
 	if len(cfg.Server.JWTSecret) < 32 {
 		return nil, fmt.Errorf("server.jwt_secret must be at least 32 characters (current: %d)", len(cfg.Server.JWTSecret))
 	}
 
-	if cfg.DeepSeek.APIKey == "" || cfg.DeepSeek.APIKey == "sk-your-enterprise-key" {
-		return nil, fmt.Errorf("deepseek.api_key must be set to your enterprise key")
+	if cfg.DeepSeek.APIKey == "" || cfg.DeepSeek.APIKey == "sk-your-deepseek-key" {
+		return nil, fmt.Errorf("deepseek.api_key must be set (via config or MAGIC_API_KEY env)")
 	}
 
 	if cfg.DeepSeek.BaseURL == "" {

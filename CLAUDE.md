@@ -181,6 +181,17 @@ cd /home/beautycube/magicgateway
 sudo cp deploy/magicgateway.service /etc/systemd/system/  # 或 systemd 管理
 ```
 
+敏感信息（`api_key`、`jwt_secret`）通过环境变量注入，建议写入 `~/.bashrc` 或 `~/.zshrc`：
+
+```bash
+echo 'export MAGIC_API_KEY=sk-xxx' >> ~/.bashrc
+echo 'export JWT_SECRET=xxx' >> ~/.bashrc
+source ~/.bashrc
+./gateway
+```
+
+systemd 部署时创建 `env` 文件存放环境变量，service 通过 `EnvironmentFile=` 加载，详见 `deploy/magicgateway.service`。
+
 详细方案见：[PLAN.md](PLAN.md)
 
 ## 历史变更

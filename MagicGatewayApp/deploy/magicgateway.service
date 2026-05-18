@@ -9,6 +9,7 @@ ExecStart=/home/beautycube/magicgateway/gateway
 Restart=always
 RestartSec=5
 Environment=TZ=Asia/Shanghai
+EnvironmentFile=/home/beautycube/magicgateway/env
 
 NoNewPrivileges=yes
 PrivateTmp=yes

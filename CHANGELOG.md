@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-05-18
+## [0.1.1] — 2026-05-18
 
 ### 前端 UI
 
@@ -8,6 +8,16 @@
 - **客户端配置指南**：dashboard 新增独立卡片，常态化展示 Linux/Mac 和 Windows 的 Claude Code 配置指南，含 shell 函数和 settings.json 模板，API Key 位置使用占位符。
 - **switchPlatform 作用域隔离**：新增 `scope` 参数（`kpanel` / `gpanel`），解决 Key 创建弹窗和配置指南卡片中多组 platform-tab 的切换冲突。
 - **用量统计标签作用域**：`switchStats` / `switchRanking` 选择器从全局 `.stats-tab` 改为 `#statsTabs` / `#rankTabs` 作用域限定，避免排行和统计两组标签互相干扰。
+
+### 文档
+
+- **CHANGELOG.md**：新建独立变更日志，将 CLAUDE.md 中"待优化一览"表格和"架构决策"章节移入，CLAUDE.md 精简为项目参考文档。
+- **CLAUDE.md**：移除已修复问题清单，改为引用 CHANGELOG.md。
+
+### 工程化
+
+- **版本管理**：新增 `VERSION` 文件（当前 0.1.0）为唯一版本源，语义化版本号。Makefile 构建时通过 `-ldflags "-X main.Version=..."` 注入版本号。
+- **Git 工作流**：会话末由用户决定提交时机，发布时创建 annotated tag 并推送。
 
 ## 2026-05-17
 

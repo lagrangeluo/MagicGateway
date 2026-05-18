@@ -1,6 +1,6 @@
 server:
   port: 8080
-  jwt_secret: lagrangeluomagicgatewaysecretkey
+  jwt_secret: <your-jwt-secret-at-least-32-chars>
 
 deepseek:
   base_url: https://api.deepseek.com/anthropic
@@ -11,4 +11,4 @@ database:
 
 admin:
   default_username: admin
-  default_password: magic2026
+  default_password: <your-admin-password>

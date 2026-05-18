@@ -1,1 +1,6 @@
 .go-cache/
+config.yaml
+config.test.yaml
+data/
+tmp/
+build/

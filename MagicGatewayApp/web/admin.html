@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MagicGateway - 管理面板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh}
+header{background:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+header h1{font-size:18px;color:#1a1a1a}
+header .user-info{display:flex;align-items:center;gap:16px;font-size:14px;color:#666}
+header .user-info button{background:none;border:1px solid #ddd;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;color:#666}
+header .user-info button:hover{background:#f5f5f5}
+nav{max-width:1100px;margin:20px auto 0;padding:0 16px;display:flex;gap:4px}
+nav button{padding:10px 20px;border:none;border-radius:8px 8px 0 0;font-size:14px;cursor:pointer;background:#e8e8e8;color:#666;font-weight:500}
+nav button.active{background:#fff;color:#1a73e8}
+main{max-width:1100px;margin:0 auto;padding:0 16px 24px}
+.card{background:#fff;border-radius:0 10px 10px 10px;box-shadow:0 1px 6px rgba(0,0,0,.04);padding:24px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.metric{background:#f8faff;padding:20px;border-radius:8px;text-align:center}
+.metric .value{font-size:28px;font-weight:700;color:#1a73e8}
+.metric .label{font-size:12px;color:#888;margin-top:4px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;font-size:13px}
+th{background:#fafafa;color:#666;font-weight:600;border-bottom:2px solid #e8e8e8}
+td{border-bottom:1px solid #f0f0f0;color:#333}
+.btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:.2s}
+.btn-primary{background:#1a73e8;color:#fff}
+.btn-primary:hover{background:#1557b0}
+.btn-danger{background:#fff;color:#dc2626;border:1px solid #fca5a5}
+.btn-danger:hover{background:#fef2f2}
+.btn-sm{padding:4px 10px;font-size:12px}
+.inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-active{background:#ecfdf5;color:#059669}
+.badge-revoked{background:#fef2f2;color:#dc2626}
+.badge-admin{background:#eff6ff;color:#1a73e8}
+.muted{color:#999;font-size:12px}
+.key-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;margin-top:12px}
+.key-card-warn{background:#fefce8;border-bottom:1px solid #fde68a;padding:12px 16px;font-size:13px;color:#92400e}
+.key-card-body{padding:16px}
+.key-label{font-size:12px;color:#888;margin-bottom:4px;margin-top:14px}
+.key-label:first-child{margin-top:0}
+.key-value{background:#f5f5f5;padding:10px 14px;border-radius:6px;display:block;font-size:13px;word-break:break-all;font-family:SF Mono,Menlo,monospace}
+.code-wrap{position:relative;margin-top:4px}
+.code-block{background:#1e1e2e;color:#cdd6f4;padding:14px 16px;border-radius:8px;font-size:12px;line-height:1.7;overflow-x:auto;margin:0;font-family:SF Mono,Menlo,monospace}
+.copy-btn{position:absolute;top:8px;right:8px;background:#45475a;color:#cdd6f4;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer}
+select,input[type=date],input[type=text]{padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none}
+select:focus,input:focus{border-color:#1a73e8}
+.hidden{display:none}
+.platform-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #e8e8e8}
+.platform-tab{padding:8px 20px;border:none;background:none;font-size:14px;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
+.platform-tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:600}
+.stats-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #e8e8e8}
+.stats-tab{padding:8px 20px;border:none;background:none;font-size:14px;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
+.stats-tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:600}
+.platform-panel{display:none}
+.platform-panel.active{display:block}
+.platform-steps{font-size:13px;color:#555;line-height:1.8;margin-bottom:12px}
+.platform-steps ol{padding-left:18px;margin:8px 0}
+.platform-steps code{background:#f0f0f0;padding:1px 6px;border-radius:3px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<h1>MagicGateway 管理</h1>
+<div class="user-info"><span id="headerUser"></span><a href="/dashboard" style="font-size:13px;color:#1a73e8;text-decoration:none;margin-right:8px">用户面板</a><button onclick="logout()">退出</button></div>
+</header>
+<nav>
+<button class="active" onclick="switchTab('overview')">概览</button>
+<button onclick="switchTab('users')">用户管理</button>
+<button onclick="switchTab('keys')">Key 管理</button>
+<button onclick="switchTab('stats')">统计查询</button>
+</nav>
+<main>
+<div class="card">
+<div id="tab-overview">
+<div class="metrics">
+<div class="metric"><div class="value" id="ovUsers">-</div><div class="label">总用户数</div></div>
+<div class="metric"><div class="value" id="ovKeys">-</div><div class="label">活跃 Key 数</div></div>
+<div class="metric"><div class="value" id="ovToday">-</div><div class="label">今日 Token 消耗</div></div>
+</div>
+<div style="text-align:center;margin-top:8px;margin-bottom:20px"><span class="muted">本月累计：</span><strong id="ovMonth"></strong></div>
+<div style="border-top:1px solid #f0f0f0;padding-top:20px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:15px;color:#1a1a1a;margin:0">Token 用量排行</h3><div id="rankTabs" class="stats-tabs" style="margin-bottom:0;border-bottom:none"><button class="stats-tab" onclick="switchRanking('daily')">今日</button><button class="stats-tab active" onclick="switchRanking('weekly')">本周</button><button class="stats-tab" onclick="switchRanking('monthly')">本月</button><button class="stats-tab" onclick="switchRanking('yearly')">今年</button></div></div>
+<div id="rankingList" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"><span class="muted">加载中...</span></div>
+</div>
+</div>
+<div id="tab-users" class="hidden">
+<h2 style="margin-bottom:16px">用户列表</h2>
+<table id="usersTable"><thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>Key 数</th><th>本月 Token</th><th>注册时间</th><th>操作</th></tr></thead><tbody></tbody></table>
+</div>
+<div id="tab-keys" class="hidden">
+<h2 style="margin-bottom:16px">所有 API Keys</h2>
+<div class="inline">
+<select id="keysUserFilter" onchange="loadAllKeys()"><option value="">全部用户</option></select>
+<button class="btn btn-primary btn-sm" onclick="showAdminCreateKey()">+ 为选中用户创建 Key</button>
+</div>
+<div id="adminCreateKeyForm" style="display:none;margin-bottom:16px;padding:16px;background:#fafafa;border-radius:8px">
+<span class="muted">将 Key 分配给用户 ID=</span><strong id="adminCreateUserID"></strong>
+<input type="text" id="adminKeyName" placeholder="Key 名称（可选）" style="margin-left:8px;width:180px">
+<button class="btn btn-primary btn-sm" onclick="adminCreateKey()">确认创建</button>
+<button class="btn btn-sm" onclick="document.getElementById('adminCreateKeyForm').style.display='none'" style="background:#f0f0f0">取消</button>
+<div id="adminNewKeyDisplay"></div>
+</div>
+<table id="allKeysTable"><thead><tr><th>ID</th><th>用户</th><th>Key 前缀</th><th>名称</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead><tbody></tbody></table>
+</div>
+<div id="tab-stats" class="hidden">
+<h2 style="margin-bottom:16px">用量统计</h2>
+<div class="inline">
+<select id="statsUser" onchange="loadAllStats()"><option value="">全部用户</option></select>
+<select id="statsPeriod" onchange="onStatsPeriodChange()"><option value="daily">日</option><option value="weekly">周</option><option value="monthly">月</option><option value="yearly">年</option></select>
+<input type="date" id="statsDate" onchange="loadAllStats()">
+</div>
+<table id="allStatsTable"><thead><tr><th>用户</th><th>模型</th><th>输入 Token</th><th>输出 Token</th><th>总计 Token</th><th>请求次数</th></tr></thead><tbody></tbody></table>
+</div>
+</div>
+</main>
+<footer style="text-align:center;padding:16px;font-size:12px;color:#999" id="footerVersion">MagicGateway</footer>
+<script>
+fetch('/health').then(r=>r.json()).then(d=>{document.getElementById('footerVersion').textContent='MagicGateway v'+d.version}).catch(()=>{});
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function fmtTokens(n){if(n===null||n===undefined)return'-';var v=Number(n);if(v<10000)return v.toLocaleString();if(v<1e8){var w=v/1e4;return(w%1===0?w.toFixed(0):w.toFixed(2))+' 万'}var yi=Math.floor(v/1e8);var wan=Math.round((v%1e8)/1e4);if(wan>0)return yi+' 亿 '+wan+' 万';return yi+' 亿'}
+function fmtTokensRaw(n){if(n===null||n===undefined)return'-';return Number(n).toLocaleString()}
+var CFG_TMPL='claude-magic() {\n  env \\\n    ANTHROPIC_BASE_URL="{URL}" \\\n    ANTHROPIC_AUTH_TOKEN="{KEY}" \\\n    ANTHROPIC_MODEL="deepseek-v4-pro[1m]" \\\n    ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]" \\\n    ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]" \\\n    ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash" \\\n    CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash" \\\n    CLAUDE_CODE_EFFORT_LEVEL="max" \\\n    claude --model "deepseek-v4-pro[1m]" "$@"\n}';
+var WIN_CFG_TMPL='function claude-magic {\n    $env:ANTHROPIC_BASE_URL="{URL}"\n    $env:ANTHROPIC_AUTH_TOKEN="{KEY}"\n    $env:ANTHROPIC_MODEL="deepseek-v4-pro[1m]"\n    $env:ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]"\n    $env:ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"\n    $env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"\n    $env:CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"\n    $env:CLAUDE_CODE_EFFORT_LEVEL="max"\n    claude --model "deepseek-v4-pro[1m]" @args\n}';
+var WIN_JSON_TMPL='{\n  "env": {\n    "ANTHROPIC_BASE_URL": "{URL}",\n    "ANTHROPIC_AUTH_TOKEN": "{KEY}",\n    "ANTHROPIC_MODEL": "deepseek-v4-pro[1m]",\n    "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro[1m]",\n    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro[1m]",\n    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash",\n    "CLAUDE_CODE_SUBAGENT_MODEL": "deepseek-v4-flash",\n    "CLAUDE_CODE_EFFORT_LEVEL": "max"\n  },\n  "permissions": {\n    "allow": [\n      "Bash(pip install *)",\n      "Bash(python main.py --algo reinforce --episodes 50)"\n    ]\n  },\n  "disableLoginPrompt": true,\n  "hasCompletedOnboarding": true\n}';
+var KEY_HTML=[
+'<div class="key-card">',
+'<div class="key-card-warn"><strong>Key 已创建</strong> — 关闭后将无法再次查看，请立即保存</div>',
+'<div class="key-card-body">',
+'<div class="key-label">API Key</div>',
+'<code class="key-value">{KEY}</code>',
+'<div class="platform-tabs" style="margin-top:16px">',
+'<button class="platform-tab active" onclick="switchPlatform(\'linux\')">Linux / Mac</button>',
+'<button class="platform-tab" onclick="switchPlatform(\'win\')">Windows</button>',
+'</div>',
+'<div class="platform-panel active" id="kpanel-linux">',
+'<div class="key-label" style="margin-top:12px">将函数添加到 ~/.zshrc 或 ~/.bashrc，执行 source 后，终端输入 claude-magic 即可启动</div>',
+'<div class="code-wrap"><pre class="code-block">{CFG}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button>',
+'</div></div>',
+'<div class="platform-panel" id="kpanel-win">',
+'<div class="platform-steps"><ol>',
+'<li>以管理员身份打开 PowerShell，安装 Claude CLI：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">winget install Anthropic.ClaudeCode</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'winget install Anthropic.ClaudeCode\')">复制</button></div></li>',
+'<li style="margin-top:8px">检查并创建 PowerShell 配置文件：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">Test-Path $PROFILE</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'Test-Path $PROFILE\')">复制</button></div>',
+'<span class="muted">如果返回 False，运行以下命令创建：</span>',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">New-Item -Path $PROFILE -ItemType File -Force</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'New-Item -Path $PROFILE -ItemType File -Force\')">复制</button></div></li>',
+'<li style="margin-top:8px"><strong>方法一（推荐）</strong>：运行 <code>notepad $PROFILE</code> 编辑配置文件，将以下函数粘贴到记事本并保存：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">{WINCFG}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button></div></li>',
+'<li style="margin-top:8px">重新加载配置（或重启 PowerShell），之后输入 <code>claude-magic</code> 即可启动：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">. $PROFILE</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'. $PROFILE\')">复制</button></div></li>',
+'</ol>',
+'<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e8e8e8">',
+'<strong>方法二</strong>：在 <code>%USERPROFILE%\\.claude\\</code> 目录下创建 <code>settings.json</code> 文件，添加以下内容，之后终端直接运行 <code>claude</code> 即可：',
+'<div class="code-wrap" style="margin-top:8px"><pre class="code-block">{WINJSON}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button></div>',
+'</div></div>',
+'</div></div>'].join('');
+function switchPlatform(p){
+document.querySelectorAll('.platform-tab').forEach(function(b,i){b.classList.toggle('active',(i===0&&p==='linux')||(i===1&&p==='win'))});
+document.querySelectorAll('.platform-panel').forEach(function(el){el.classList.toggle('active',el.id==='kpanel-'+p)})}
+function renderKeyResult(k){
+var cfg=escHTML(CFG_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',k));
+var wincfg=escHTML(WIN_CFG_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',k));
+var winjson=escHTML(WIN_JSON_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',k));
+return KEY_HTML.replace('{KEY}',k).replace('{CFG}',cfg).replace('{WINCFG}',wincfg).replace('{WINJSON}',winjson)}
+function escHTML(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+var user=JSON.parse(localStorage.getItem('user')||'{}');
+if(!user.id||user.role!=='admin'){location.href='/login'}
+document.getElementById('headerUser').textContent=user.username+' (管理员)';
+function auth(){return {'Authorization':'Bearer '+localStorage.getItem('token')}}
+function logout(){localStorage.clear();location.href='/login'}
+
+var currentTab='overview';
+function switchTab(t){currentTab=t;document.querySelectorAll('nav button').forEach(function(b,i){b.classList.toggle('active',b.textContent.trim()===(t==='overview'?'概览':t==='users'?'用户管理':t==='keys'?'Key 管理':'统计查询'))});['overview','users','keys','stats'].forEach(function(id){document.getElementById('tab-'+id).classList.toggle('hidden',id!==t)});if(t==='overview'){loadOverview();loadRanking()}if(t==='users')loadUsers();if(t==='keys'){loadUserFilter();loadAllKeys()}if(t==='stats'){loadStatsUserFilter();loadAllStats()}}
+
+async function loadOverview(){
+var r=await fetch('/api/admin/stats/overview',{headers:auth()});var d=await r.json();
+document.getElementById('ovUsers').textContent=d.total_users;
+document.getElementById('ovKeys').textContent=d.total_keys;
+document.getElementById('ovToday').textContent=fmtTokens(d.today_tokens);
+document.getElementById('ovToday').title=fmtTokensRaw(d.today_tokens)+' token';
+document.getElementById('ovMonth').textContent=fmtTokens(d.month_tokens);
+document.getElementById('ovMonth').title=fmtTokensRaw(d.month_tokens)+' token'}
+
+async function loadUsers(){
+var r=await fetch('/api/admin/users/stats',{headers:auth()});var users=await r.json();
+var t=document.querySelector('#usersTable tbody');t.innerHTML='';
+users.forEach(function(u){var btns='<button class="btn btn-sm" onclick="resetUserPassword('+u.id+',\''+esc(u.username)+'\')" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;margin-right:4px">重置密码</button>';if(u.role!=='admin')btns+='<button class="btn btn-danger btn-sm" onclick="deleteUser('+u.id+',\''+esc(u.username)+'\')">删除</button>';t.innerHTML+='<tr><td>'+u.id+'</td><td>'+esc(u.username)+'</td><td><span class="badge '+(u.role==='admin'?'badge-admin':'badge-active')+'">'+esc(u.role)+'</span></td><td>'+u.key_count+'</td><td title="'+fmtTokensRaw(u.month_tokens)+' token">'+fmtTokens(u.month_tokens)+'</td><td>'+esc(u.created_at)+'</td><td>'+btns+'</td></tr>'})}
+function deleteUser(id,name){openModal('删除用户','<p style="color:#555;font-size:14px;line-height:1.7">确认删除用户 <strong>'+esc(name)+'</strong> 及其所有 Key 和使用记录？<br><span style="color:#dc2626;font-size:13px">此操作不可撤销。</span></p>','确认删除','background:#dc2626;color:#fff;',async function(){await fetch('/api/admin/users/'+id,{method:'DELETE',headers:auth()});closeModal();loadUsers();loadOverview();loadRanking()})}
+function resetUserPassword(id,name){openModal('重置 '+name+' 的密码','<div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">新密码</label><input type="password" id="m-new-pwd" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;outline:none" placeholder="至少 6 位"><div id="m-err" style="color:#dc2626;font-size:13px;margin-top:8px;display:none"></div></div>','确认重置','background:#f59e0b;color:#fff;',async function(){var pwd=document.getElementById('m-new-pwd').value;var err=document.getElementById('m-err');if(pwd.length<6){err.textContent='密码至少 6 位';err.style.display='block';return}var r=await fetch('/api/admin/users/'+id+'/password',{method:'PUT',headers:{'Content-Type':'application/json',...auth()},body:JSON.stringify({new_password:pwd})});var d=await r.json();if(r.ok){closeModal();alert(d.message)}else{err.textContent=d.error;err.style.display='block'}});setTimeout(function(){var el=document.getElementById('m-new-pwd');if(el)el.focus()},50)}
+
+async function loadUserFilter(){
+var r=await fetch('/api/admin/users',{headers:auth()});var users=await r.json();
+var s=document.getElementById('keysUserFilter');s.innerHTML='<option value="">全部用户</option>';
+users.forEach(function(u){s.innerHTML+='<option value="'+u.id+'">'+u.username+'</option>'})}
+async function loadAllKeys(){
+var uid=document.getElementById('keysUserFilter').value;
+var url='/api/admin/keys'+(uid?'?user_id='+uid:'');
+var r=await fetch(url,{headers:auth()});var keys=await r.json();
+// Fetch users for name mapping
+var ur=await fetch('/api/admin/users',{headers:auth()});var users=await ur.json();
+var userMap={};users.forEach(function(u){userMap[u.id]=u.username});
+var t=document.querySelector('#allKeysTable tbody');t.innerHTML='';
+keys.forEach(function(k){t.innerHTML+='<tr><td>'+k.id+'</td><td>'+esc(userMap[k.user_id]||String(k.user_id))+'</td><td><code>'+esc(k.key_prefix)+'</code></td><td>'+esc(k.key_name)+'</td><td><span class="badge '+(k.is_active?'badge-active':'badge-revoked')+'">'+(k.is_active?'有效':'已吊销')+'</span></td><td>'+esc(k.created_at)+'</td><td>'+(k.is_active?'<button class="btn btn-danger btn-sm" onclick="adminRevokeKey('+k.id+')">吊销</button>':'<button class="btn btn-sm" onclick="adminEnableKey('+k.id+')" style="background:#ecfdf5;color:#059669;border:1px solid #a7f3d0">启用</button>')+'</td></tr>'})}
+async function adminEnableKey(id){if(!confirm('确认重新启用此 Key？'))return;await fetch('/api/admin/keys/'+id+'/enable',{method:'PUT',headers:auth()});loadAllKeys()}
+function showAdminCreateKey(){
+var uid=document.getElementById('keysUserFilter').value;if(!uid){alert('请先在上方筛选一个用户');return}
+document.getElementById('adminCreateUserID').textContent=uid;document.getElementById('adminCreateKeyForm').style.display='block';document.getElementById('adminNewKeyDisplay').innerHTML=''}
+async function adminCreateKey(){
+var uid=document.getElementById('keysUserFilter').value,n=document.getElementById('adminKeyName').value.trim();
+var r=await fetch('/api/admin/keys',{method:'POST',headers:{'Content-Type':'application/json',...auth()},body:JSON.stringify({user_id:parseInt(uid),key_name:n})});
+var d=await r.json();
+if(r.ok){document.getElementById('adminNewKeyDisplay').innerHTML=renderKeyResult(d.api_key);loadAllKeys()}
+else{alert(d.error)}}
+async function adminRevokeKey(id){if(!confirm('确认吊销此 Key？'))return;await fetch('/api/admin/keys/'+id,{method:'DELETE',headers:auth()});loadAllKeys()}
+
+async function loadStatsUserFilter(){
+var r=await fetch('/api/admin/users',{headers:auth()});var users=await r.json();
+var s=document.getElementById('statsUser');s.innerHTML='<option value="">全部用户</option>';
+users.forEach(function(u){s.innerHTML+='<option value="'+u.id+'">'+u.username+'</option>'})}
+function onStatsPeriodChange(){var p=document.getElementById('statsPeriod').value;var el=document.getElementById('statsDate');if(p==='monthly'){el.type='month'}else if(p==='yearly'){el.type='number';el.placeholder='年份';el.min='2020';el.max='2099';el.style.width='100px'}else{el.type='date';el.placeholder='';el.style.width=''};loadAllStats()}
+async function loadAllStats(){
+var uid=document.getElementById('statsUser').value,p=document.getElementById('statsPeriod').value,d=document.getElementById('statsDate').value;
+var url='/api/admin/stats/all?period='+p+'&date='+d+(uid?'&user_id='+uid:'');
+var r=await fetch(url,{headers:auth()});var rows=await r.json();
+var t=document.querySelector('#allStatsTable tbody');t.innerHTML='';
+rows.forEach(function(r){t.innerHTML+='<tr><td>'+esc(r.user_name)+'</td><td>'+esc(r.model||'-')+'</td><td title="'+fmtTokensRaw(r.input_tokens)+'">'+fmtTokens(r.input_tokens)+'</td><td title="'+fmtTokensRaw(r.output_tokens)+'">'+fmtTokens(r.output_tokens)+'</td><td style="font-weight:600" title="'+fmtTokensRaw(r.total_tokens)+'">'+fmtTokens(r.total_tokens)+'</td><td>'+r.request_count+'</td></tr>'});
+if(!rows.length)t.innerHTML='<tr><td colspan="6" class="muted" style="text-align:center">暂无数据</td></tr>'}
+var rankPeriod='weekly';
+function switchRanking(p){rankPeriod=p;document.querySelectorAll('#rankTabs .stats-tab').forEach(function(b,i){b.classList.toggle('active',(i===0&&p==='daily')||(i===1&&p==='weekly')||(i===2&&p==='monthly')||(i===3&&p==='yearly'))});loadRanking()}
+async function loadRanking(){
+var p=rankPeriod;
+var d=new Date();
+var dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+if(p==='yearly')dateStr=d.getFullYear().toString();
+else if(p==='monthly')dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+var r=await fetch('/api/admin/stats/ranking?period='+p+'&date='+dateStr,{headers:auth()});
+var rows=await r.json();
+var el=document.getElementById('rankingList');
+if(!rows.length){el.innerHTML='<span class="muted">暂无数据</span>';return}
+var medals=['🥇','🥈','🥉'];
+el.innerHTML=rows.map(function(r,i){
+var medal=i<3?medals[i]:'<span style="color:#999;width:24px;display:inline-block;text-align:center">'+(i+1)+'</span>';
+var barW=rows.length?Math.max(5,Math.round(r.total_tokens/Math.max(...rows.map(function(x){return x.total_tokens}))*100)):0;
+return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:'+(i<3?'#fffbeb':'#fff')+';border-radius:8px;border:1px solid '+(i<3?'#fde68a':'#f0f0f0')+'"><span style="font-size:18px;width:28px">'+medal+'</span><span style="font-weight:600;min-width:80px;font-size:14px">'+esc(r.user_name)+'</span><div style="flex:1;background:#f5f5f5;border-radius:4px;height:20px;position:relative"><div style="background:'+(i<3?'#f59e0b':'#1a73e8')+';height:100%;width:'+barW+'%;border-radius:4px;transition:width .3s"></div></div><span style="font-weight:600;font-size:13px;min-width:80px;text-align:right" title="'+fmtTokensRaw(r.total_tokens)+' token">'+fmtTokens(r.total_tokens)+'</span><span class="muted" style="min-width:60px;text-align:right">'+r.request_count+' 次</span></div>'
+}).join('')}
+var now=new Date();document.getElementById('statsDate').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+loadOverview();loadRanking();
+function openModal(title,bodyHTML,confirmText,confirmStyle,onConfirm){document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').innerHTML=bodyHTML;var btn=document.getElementById('modal-confirm-btn');btn.textContent=confirmText;btn.style.cssText=confirmStyle;btn.onclick=onConfirm;document.getElementById('modal-overlay').style.display='flex'}
+function closeModal(){document.getElementById('modal-overlay').style.display='none'}
+</script>
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:12px;padding:28px;width:400px;max-width:calc(100vw - 32px);box-shadow:0 8px 32px rgba(0,0,0,.18)">
+<h3 id="modal-title" style="font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:20px"></h3>
+<div id="modal-body"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">
+<button onclick="closeModal()" style="padding:8px 20px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:14px;color:#666">取消</button>
+<button id="modal-confirm-btn" style="padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500"></button>
+</div></div></div>
+</body>
+</html>

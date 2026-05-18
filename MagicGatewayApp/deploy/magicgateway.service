@@ -1,0 +1,17 @@
+[Unit]
+Description=MagicGateway - DeepSeek API Gateway
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/beautycube/magicgateway
+ExecStart=/home/beautycube/magicgateway/gateway
+Restart=always
+RestartSec=5
+Environment=TZ=Asia/Shanghai
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

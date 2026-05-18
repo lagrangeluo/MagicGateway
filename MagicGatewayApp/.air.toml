@@ -1,0 +1,20 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/gateway ."
+  bin = "./tmp/gateway"
+  full_bin = "./tmp/gateway config.test.yaml"
+  include_ext = ["go", "html", "yaml"]
+  exclude_dir = ["tmp", "data", "build"]
+  delay = 500
+  stop_on_error = true
+
+[log]
+  time = false
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"

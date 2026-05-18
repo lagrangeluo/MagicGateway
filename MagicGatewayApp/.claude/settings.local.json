@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:api-docs.deepseek.com)",
+      "WebFetch(domain:platform.deepseek.com)"
+    ]
+  }
+}

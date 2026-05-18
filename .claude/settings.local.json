@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sqlite3 *)",
+      "WebFetch(domain:deepseek.com)",
+      "Bash(python3 *)"
+    ]
+  }
+}

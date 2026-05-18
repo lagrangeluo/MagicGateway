@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MagicGateway - 用户面板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f5;min-height:100vh}
+header{background:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+header h1{font-size:18px;color:#1a1a1a}
+header .user-info{display:flex;align-items:center;gap:16px;font-size:14px;color:#666}
+header .user-info button{background:none;border:1px solid #ddd;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;color:#666}
+header .user-info button:hover{background:#f5f5f5}
+main{max-width:960px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.04);padding:24px;margin-bottom:20px}
+.card h2{font-size:16px;margin-bottom:16px;color:#1a1a1a;padding-bottom:12px;border-bottom:1px solid #f0f0f0}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 12px;text-align:left;font-size:13px}
+th{background:#fafafa;color:#666;font-weight:600;border-bottom:2px solid #e8e8e8}
+td{border-bottom:1px solid #f0f0f0;color:#333}
+.btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:.2s}
+.btn-primary{background:#1a73e8;color:#fff}
+.btn-primary:hover{background:#1557b0}
+.btn-danger{background:#fff;color:#dc2626;border:1px solid #fca5a5}
+.btn-danger:hover{background:#fef2f2}
+.btn-sm{padding:4px 10px;font-size:12px}
+.inline{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-active{background:#ecfdf5;color:#059669}
+.badge-revoked{background:#fef2f2;color:#dc2626}
+.muted{color:#999;font-size:12px}
+.key-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;margin-top:12px}
+.key-card-warn{background:#fefce8;border-bottom:1px solid #fde68a;padding:12px 16px;font-size:13px;color:#92400e}
+.key-card-body{padding:16px}
+.key-label{font-size:12px;color:#888;margin-bottom:4px;margin-top:14px}
+.key-label:first-child{margin-top:0}
+.key-value{background:#f5f5f5;padding:10px 14px;border-radius:6px;display:block;font-size:13px;word-break:break-all;font-family:SF Mono,Menlo,monospace}
+.code-wrap{position:relative;margin-top:4px}
+.code-block{background:#1e1e2e;color:#cdd6f4;padding:14px 16px;border-radius:8px;font-size:12px;line-height:1.7;overflow-x:auto;margin:0;font-family:SF Mono,Menlo,monospace}
+.copy-btn{position:absolute;top:8px;right:8px;background:#45475a;color:#cdd6f4;border:none;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer}
+.stats-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid #e8e8e8}
+.stats-tab{padding:8px 20px;border:none;background:none;font-size:14px;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
+.stats-tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:600}
+.platform-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #e8e8e8}
+.platform-tab{padding:8px 20px;border:none;background:none;font-size:14px;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s}
+.platform-tab.active{color:#1a73e8;border-bottom-color:#1a73e8;font-weight:600}
+.platform-panel{display:none}
+.platform-panel.active{display:block}
+.platform-steps{font-size:13px;color:#555;line-height:1.8;margin-bottom:12px}
+.platform-steps ol{padding-left:18px;margin:8px 0}
+.platform-steps code{background:#f0f0f0;padding:1px 6px;border-radius:3px;font-size:12px}
+.chart-wrap{position:relative;padding-left:50px}
+.yaxis{position:absolute;left:0;top:0;bottom:24px;display:flex;flex-direction:column;justify-content:space-between;padding:4px 0}
+.yaxis span{font-size:10px;color:#999;text-align:right;line-height:1}
+.chart-bars{display:flex;align-items:stretch;gap:2px;height:160px;border-bottom:1px solid #e8e8e8;padding-bottom:20px}
+.chart-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0}
+.chart-bar{width:100%;max-width:20px;background:linear-gradient(180deg,#1a73e8,#4a9af5);border-radius:3px 3px 0 0;transition:height .3s;position:relative;cursor:pointer}
+.chart-bar.zero{background:#e8ecf4;min-height:2px}
+.chart-bar:hover{filter:brightness(1.15)}
+.chart-bar:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;white-space:nowrap;z-index:10;pointer-events:none}
+.chart-bar.zero:hover::after{background:#555}
+.chart-xlabel{font-size:10px;color:#999;margin-top:6px;text-align:center;white-space:nowrap}
+.stat-period{font-size:12px;color:#888;font-weight:500}
+.stat-bar-wrap{width:32px;height:100px;background:#e8ecf4;border-radius:6px;position:relative;overflow:hidden;display:flex;align-items:flex-end}
+.stat-bar{width:100%;background:linear-gradient(180deg,#1a73e8,#4a9af5);border-radius:6px;transition:height .5s ease;min-height:4px}
+.stat-value{font-size:16px;font-weight:700;color:#1a1a1a}
+.stat-meta{font-size:11px;color:#999}
+select,input[type=date]{padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none}
+select:focus,input[type=date]:focus{border-color:#1a73e8}
+</style>
+</head>
+<body>
+<header>
+<h1>MagicGateway</h1>
+<div class="user-info"><span id="headerUser"></span><button onclick="changePassword()" style="background:none;border:1px solid #ddd;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;color:#1a73e8">修改密码</button><button onclick="logout()">退出</button></div>
+</header>
+<main>
+<div class="card">
+<h2>Token 用量排行</h2>
+<div id="rankTabs" class="stats-tabs" style="margin-bottom:16px">
+<button class="stats-tab" onclick="switchRanking('daily')">今日</button>
+<button class="stats-tab active" onclick="switchRanking('weekly')">本周</button>
+<button class="stats-tab" onclick="switchRanking('monthly')">本月</button>
+<button class="stats-tab" onclick="switchRanking('yearly')">今年</button>
+</div>
+<div id="rankingList" style="display:flex;flex-direction:column;gap:8px"><span class="muted">加载中...</span></div>
+</div>
+<div class="card">
+<h2>我的 API Keys</h2>
+<div style="margin-bottom:16px"><button class="btn btn-primary" onclick="showCreateKey()">+ 申请新 Key</button></div>
+<div id="createKeyForm" style="display:none;margin-bottom:16px;padding:16px;background:#fafafa;border-radius:8px">
+<input type="text" id="keyName" placeholder="Key 名称（可选）" style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;width:200px;margin-right:8px">
+<button class="btn btn-primary btn-sm" onclick="createKey()">确认申请</button>
+<button class="btn btn-sm" onclick="document.getElementById('createKeyForm').style.display='none'" style="background:#f0f0f0">取消</button>
+<div id="newKeyDisplay"></div>
+</div>
+<table id="keysTable">
+<thead><tr><th>Key 前缀</th><th>名称</th><th>创建时间</th><th>状态</th><th>最近使用</th><th>操作</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+<div class="card">
+<h2>我的用量统计</h2>
+<div id="statsTabs" class="stats-tabs"><button class="stats-tab active" onclick="switchStats('weekly')">本周</button><button class="stats-tab" onclick="switchStats('monthly')">本月</button><button class="stats-tab" onclick="switchStats('yearly')">今年</button></div>
+<div class="chart-wrap" id="chartWrap"><span class="muted">加载中...</span></div>
+</div>
+<div class="card">
+<h2>客户端配置指南</h2>
+<p class="muted" style="margin-bottom:16px">配置 Claude Code 连接 MagicGateway 代理端点</p>
+<div id="setupGuide"></div>
+</div>
+</main>
+<footer style="text-align:center;padding:16px;font-size:12px;color:#999" id="footerVersion">MagicGateway</footer>
+<script>
+fetch('/health').then(r=>r.json()).then(d=>{document.getElementById('footerVersion').textContent='MagicGateway v'+d.version}).catch(()=>{});
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function fmtTokens(n){if(n===null||n===undefined)return'-';var v=Number(n);if(v<10000)return v.toLocaleString();if(v<1e8){var w=v/1e4;return(w%1===0?w.toFixed(0):w.toFixed(2))+' 万'}var yi=Math.floor(v/1e8);var wan=Math.round((v%1e8)/1e4);if(wan>0)return yi+' 亿 '+wan+' 万';return yi+' 亿'}
+function fmtTokensRaw(n){if(n===null||n===undefined)return'-';return Number(n).toLocaleString()}
+var user=JSON.parse(localStorage.getItem('user')||'{}');
+if(!user.id){location.href='/login'}
+document.getElementById('headerUser').textContent=user.username+' ('+(user.role==='admin'?'管理员':'用户')+')';
+
+function auth(){return {'Authorization':'Bearer '+localStorage.getItem('token')}}
+
+function changePassword(){openModal('修改密码','<div style="display:flex;flex-direction:column;gap:12px"><div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">当前密码</label><input type="password" id="m-old-pwd" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;outline:none" placeholder="输入当前密码"></div><div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">新密码</label><input type="password" id="m-new-pwd" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;outline:none" placeholder="至少 6 位"></div><div><label style="font-size:12px;color:#888;display:block;margin-bottom:4px">确认新密码</label><input type="password" id="m-confirm-pwd" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px;outline:none" placeholder="再次输入新密码"></div><div id="m-err" style="color:#dc2626;font-size:13px;display:none"></div></div>','确认修改','background:#1a73e8;color:#fff;',submitChangePassword);setTimeout(function(){document.getElementById('m-old-pwd').focus()},50)}
+async function submitChangePassword(){var old=document.getElementById('m-old-pwd').value;var pwd=document.getElementById('m-new-pwd').value;var cfm=document.getElementById('m-confirm-pwd').value;var err=document.getElementById('m-err');if(!old){err.textContent='请输入当前密码';err.style.display='block';return}if(pwd.length<6){err.textContent='新密码至少 6 位';err.style.display='block';return}if(pwd!==cfm){err.textContent='两次密码输入不一致';err.style.display='block';return}var r=await fetch('/api/auth/password',{method:'PUT',headers:{'Content-Type':'application/json',...auth()},body:JSON.stringify({old_password:old,new_password:pwd})});var d=await r.json();if(r.ok){closeModal();alert(d.message)}else{err.textContent=d.error;err.style.display='block'}}
+function logout(){localStorage.clear();location.href='/login'}
+function showCreateKey(){document.getElementById('createKeyForm').style.display='block';document.getElementById('newKeyDisplay').innerHTML=''}
+var CFG_TMPL='claude-magic() {\n  env \\\n    ANTHROPIC_BASE_URL="{URL}" \\\n    ANTHROPIC_AUTH_TOKEN="{KEY}" \\\n    ANTHROPIC_MODEL="deepseek-v4-pro[1m]" \\\n    ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]" \\\n    ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]" \\\n    ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash" \\\n    CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash" \\\n    CLAUDE_CODE_EFFORT_LEVEL="max" \\\n    claude --model "deepseek-v4-pro[1m]" "$@"\n}';
+var WIN_CFG_TMPL='function claude-magic {\n    $env:ANTHROPIC_BASE_URL="{URL}"\n    $env:ANTHROPIC_AUTH_TOKEN="{KEY}"\n    $env:ANTHROPIC_MODEL="deepseek-v4-pro[1m]"\n    $env:ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]"\n    $env:ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"\n    $env:ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"\n    $env:CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"\n    $env:CLAUDE_CODE_EFFORT_LEVEL="max"\n    claude --model "deepseek-v4-pro[1m]" @args\n}';
+var WIN_JSON_TMPL='{\n  "env": {\n    "ANTHROPIC_BASE_URL": "{URL}",\n    "ANTHROPIC_AUTH_TOKEN": "{KEY}",\n    "ANTHROPIC_MODEL": "deepseek-v4-pro[1m]",\n    "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro[1m]",\n    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro[1m]",\n    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash",\n    "CLAUDE_CODE_SUBAGENT_MODEL": "deepseek-v4-flash",\n    "CLAUDE_CODE_EFFORT_LEVEL": "max"\n  },\n  "permissions": {\n    "allow": [\n      "Bash(pip install *)",\n      "Bash(python main.py --algo reinforce --episodes 50)"\n    ]\n  },\n  "disableLoginPrompt": true,\n  "hasCompletedOnboarding": true\n}';
+var KEY_HTML=[
+'<div class="key-card">',
+'<div class="key-card-warn"><strong>Key 已创建</strong> — 关闭后将无法再次查看，请立即保存</div>',
+'<div class="key-card-body">',
+'<div class="key-label">API Key</div>',
+'<code class="key-value">{KEY}</code>',
+'<div id="kpanel-tabs" class="platform-tabs" style="margin-top:16px">',
+'<button class="platform-tab active" onclick="switchPlatform(\'linux\',\'kpanel\')">Linux / Mac</button>',
+'<button class="platform-tab" onclick="switchPlatform(\'win\',\'kpanel\')">Windows</button>',
+'</div>',
+'<div class="platform-panel active" id="kpanel-linux">',
+'<div class="key-label" style="margin-top:12px">将函数添加到 ~/.zshrc 或 ~/.bashrc，执行 source 后，终端输入 claude-magic 即可启动</div>',
+'<div class="code-wrap"><pre class="code-block">{CFG}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button>',
+'</div></div>',
+'<div class="platform-panel" id="kpanel-win">',
+'<div class="platform-steps"><ol>',
+'<li>以管理员身份打开 PowerShell，安装 Claude CLI：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">winget install Anthropic.ClaudeCode</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'winget install Anthropic.ClaudeCode\')">复制</button></div></li>',
+'<li style="margin-top:8px">检查并创建 PowerShell 配置文件：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">Test-Path $PROFILE</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'Test-Path $PROFILE\')">复制</button></div>',
+'<span class="muted">如果返回 False，运行以下命令创建：</span>',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">New-Item -Path $PROFILE -ItemType File -Force</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'New-Item -Path $PROFILE -ItemType File -Force\')">复制</button></div></li>',
+'<li style="margin-top:8px"><strong>方法一（推荐）</strong>：运行 <code>notepad $PROFILE</code> 编辑配置文件，将以下函数粘贴到记事本并保存：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">{WINCFG}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button></div></li>',
+'<li style="margin-top:8px">重新加载配置（或重启 PowerShell），之后输入 <code>claude-magic</code> 即可启动：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">. $PROFILE</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'. $PROFILE\')">复制</button></div></li>',
+'</ol>',
+'<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e8e8e8">',
+'<strong>方法二</strong>：在 <code>%USERPROFILE%\\.claude\\</code> 目录下创建 <code>settings.json</code> 文件，添加以下内容，之后终端直接运行 <code>claude</code> 即可：',
+'<div class="code-wrap" style="margin-top:8px"><pre class="code-block">{WINJSON}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button></div>',
+'</div></div>',
+'</div></div>'].join('');
+var GUIDE_HTML=[
+'<div id="gpanel-tabs" class="platform-tabs">',
+'<button class="platform-tab active" onclick="switchPlatform(\'linux\',\'gpanel\')">Linux / Mac</button>',
+'<button class="platform-tab" onclick="switchPlatform(\'win\',\'gpanel\')">Windows</button>',
+'</div>',
+'<div class="platform-panel active" id="gpanel-linux">',
+'<div class="key-label" style="margin-top:12px">将函数添加到 ~/.zshrc 或 ~/.bashrc，执行 source 后，终端输入 claude-magic 即可启动</div>',
+'<div class="code-wrap"><pre class="code-block">{CFG}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button>',
+'</div></div>',
+'<div class="platform-panel" id="gpanel-win">',
+'<div class="platform-steps"><ol>',
+'<li>以管理员身份打开 PowerShell，安装 Claude CLI：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">winget install Anthropic.ClaudeCode</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'winget install Anthropic.ClaudeCode\')">复制</button></div></li>',
+'<li style="margin-top:8px">检查并创建 PowerShell 配置文件：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">Test-Path $PROFILE</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'Test-Path $PROFILE\')">复制</button></div>',
+'<span class="muted">如果返回 False，运行以下命令创建：</span>',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">New-Item -Path $PROFILE -ItemType File -Force</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'New-Item -Path $PROFILE -ItemType File -Force\')">复制</button></div></li>',
+'<li style="margin-top:8px"><strong>方法一（推荐）</strong>：运行 <code>notepad $PROFILE</code> 编辑配置文件，将以下函数粘贴到记事本并保存：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">{WINCFG}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button></div></li>',
+'<li style="margin-top:8px">重新加载配置（或重启 PowerShell），之后输入 <code>claude-magic</code> 即可启动：',
+'<div class="code-wrap" style="margin-top:4px"><pre class="code-block">. $PROFILE</pre>',
+'<button class="copy-btn" onclick="navigator.clipboard.writeText(\'. $PROFILE\')">复制</button></div></li>',
+'</ol>',
+'<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e8e8e8">',
+'<strong>方法二</strong>：在 <code>%USERPROFILE%\\.claude\\</code> 目录下创建 <code>settings.json</code> 文件，添加以下内容，之后终端直接运行 <code>claude</code> 即可：',
+'<div class="code-wrap" style="margin-top:8px"><pre class="code-block">{WINJSON}</pre>',
+'<button class="copy-btn" onclick="var p=this.parentNode.querySelector(\'pre\');navigator.clipboard.writeText(p.textContent)">复制</button></div>',
+'</div></div>',
+'</div>'].join('');
+function renderGuide(){
+var el=document.getElementById('setupGuide');
+var placeholder='YOUR_API_KEY';
+var cfg=escHTML(CFG_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',placeholder));
+var wincfg=escHTML(WIN_CFG_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',placeholder));
+var winjson=escHTML(WIN_JSON_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',placeholder));
+el.innerHTML='<div class="key-label">API Key</div><code class="key-value" style="color:#999">'+escHTML(placeholder)+'</code>'+GUIDE_HTML.replace('{CFG}',cfg).replace('{WINCFG}',wincfg).replace('{WINJSON}',winjson)
+}
+function switchPlatform(p,scope){
+var s=scope||'kpanel';
+var tabs=document.querySelectorAll('#'+s+'-tabs .platform-tab');
+tabs.forEach(function(b,i){b.classList.toggle('active',(i===0&&p==='linux')||(i===1&&p==='win'))});
+var panels=document.querySelectorAll('#'+s+'-linux, #'+s+'-win');
+panels.forEach(function(el){el.classList.toggle('active',el.id===s+'-'+p)})}
+function renderKeyResult(k){
+var cfg=escHTML(CFG_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',k));
+var wincfg=escHTML(WIN_CFG_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',k));
+var winjson=escHTML(WIN_JSON_TMPL.replace('{URL}',window.location.origin).replace('{KEY}',k));
+return KEY_HTML.replace('{KEY}',k).replace('{CFG}',cfg).replace('{WINCFG}',wincfg).replace('{WINJSON}',winjson)}
+function escHTML(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+async function createKey(){
+var n=document.getElementById('keyName').value.trim();
+var r=await fetch('/api/keys',{method:'POST',headers:{'Content-Type':'application/json',...auth()},body:JSON.stringify({key_name:n})});
+var d=await r.json();
+if(r.ok){document.getElementById('newKeyDisplay').innerHTML=renderKeyResult(d.api_key);loadKeys()}
+else{alert(d.error)}}
+async function revokeKey(id){if(!confirm('确认吊销此 Key？'))return;
+await fetch('/api/keys/'+id,{method:'DELETE',headers:auth()});loadKeys()}
+async function loadKeys(){
+var r=await fetch('/api/keys',{headers:auth()});var keys=await r.json();
+var t=document.querySelector('#keysTable tbody');t.innerHTML='';
+keys.forEach(function(k){var lu=k.last_used||'-';var lt=k.last_tokens||0;t.innerHTML+='<tr><td><code>'+esc(k.key_prefix)+'</code></td><td>'+esc(k.key_name)+'</td><td>'+esc(k.created_at)+'</td><td><span class="badge badge-active">有效</span></td><td class="muted" title="'+fmtTokensRaw(lt)+' token">'+esc(lu)+'</td><td><button class="btn btn-danger btn-sm" onclick="revokeKey('+k.id+')">吊销</button></td></tr>'})}
+var currentStats='weekly';
+function yAxisSteps(max){
+if(max<=0)return[0,1,2,3,4];
+var rough=max/4,mag=Math.pow(10,Math.floor(Math.log10(rough))),r=rough/mag;
+var step=r<=1.5?mag:r<=3?2*mag:r<=7?5*mag:10*mag;
+var steps=[];
+for(var i=0;i<=5;i++)steps.push(Math.round(i*step));
+return steps
+}
+function switchStats(p){currentStats=p;document.querySelectorAll('#statsTabs .stats-tab').forEach(function(b,i){b.classList.toggle('active',(i===0&&p==='weekly')||(i===1&&p==='monthly')||(i===2&&p==='yearly'))});loadChart()}
+async function loadChart(){
+try{
+var p=currentStats,d=new Date();
+var dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+if(p==='yearly')dateStr=d.getFullYear().toString();
+else if(p==='monthly')dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+var r=await fetch('/api/stats/breakdown?period='+p+'&date='+dateStr,{headers:auth()});
+var rows=await r.json();
+var el=document.getElementById('chartWrap');
+var maxV=Math.max.apply(null,rows.map(function(x){return x.total_tokens}));
+var steps=yAxisSteps(maxV);
+var yLabels=steps.map(function(s){return s>=1e4?(s/1e4)+'万':s}).reverse();
+el.innerHTML=
+'<div class="yaxis">'+yLabels.map(function(l){return '<span>'+l+'</span>'}).join('')+'</div>'+
+'<div class="chart-bars">'+rows.map(function(x){
+var h=maxV>0?Math.round(x.total_tokens/maxV*100):0;
+return '<div class="chart-bar-col"><div class="chart-bar'+(h===0?' zero':'')+'" style="height:'+Math.max(h,1)+'%" data-tip="'+fmtTokens(x.total_tokens)+'"></div><div class="chart-xlabel">'+x.label+'</div></div>'
+}).join('')+'</div>';
+}catch(e){
+console.error('loadChart error',e);
+document.getElementById('chartWrap').innerHTML='<div style="color:red;padding:16px">图表加载失败: '+e.message+'</div>';
+}
+}
+var rankPeriod='weekly';
+function switchRanking(p){rankPeriod=p;document.querySelectorAll('#rankTabs .stats-tab').forEach(function(b,i){b.classList.toggle('active',(i===0&&p==='daily')||(i===1&&p==='weekly')||(i===2&&p==='monthly')||(i===3&&p==='yearly'))});loadRanking()}
+async function loadRanking(){
+var p=rankPeriod;
+var d=new Date();
+var dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+if(p==='yearly')dateStr=d.getFullYear().toString();
+else if(p==='monthly')dateStr=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+var r=await fetch('/api/stats/ranking?period='+p+'&date='+dateStr,{headers:auth()});
+var rows=await r.json();
+var el=document.getElementById('rankingList');
+if(!rows.length){el.innerHTML='<span class="muted">暂无数据</span>';return}
+var myName=user.username;
+var maxTokens=Math.max(...rows.map(function(x){return x.total_tokens}));
+var medals=['🥇','🥈','🥉'];
+el.innerHTML=rows.map(function(r,i){
+var isMe=r.user_name===myName;
+var medal=i<3?medals[i]:'<span style="color:#999;width:24px;display:inline-block;text-align:center">'+(i+1)+'</span>';
+var barW=maxTokens?Math.max(3,Math.round(r.total_tokens/maxTokens*100)):0;
+return '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:'+(isMe?'#eff6ff':i<3?'#fffbeb':'#fff')+';border-radius:8px;border:2px solid '+(isMe?'#1a73e8':i<3?'#fde68a':'#f0f0f0')+'"><span style="font-size:18px;width:28px">'+medal+'</span><span style="font-weight:600;min-width:80px;font-size:14px">'+esc(r.user_name)+(isMe?' ⭐':'')+'</span><div style="flex:1;background:#f5f5f5;border-radius:4px;height:20px;position:relative"><div style="background:'+(isMe?'#1a73e8':i<3?'#f59e0b':'#60a5fa')+';height:100%;width:'+barW+'%;border-radius:4px;transition:width .3s"></div></div><span style="font-weight:600;font-size:13px;min-width:80px;text-align:right" title="'+fmtTokensRaw(r.total_tokens)+' token">'+fmtTokens(r.total_tokens)+'</span><span class="muted" style="min-width:60px;text-align:right">'+r.request_count+' 次</span></div>'
+}).join('')}
+loadKeys();loadChart();loadRanking();renderGuide();
+function openModal(title,bodyHTML,confirmText,confirmStyle,onConfirm){document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').innerHTML=bodyHTML;var btn=document.getElementById('modal-confirm-btn');btn.textContent=confirmText;btn.style.cssText=confirmStyle;btn.onclick=onConfirm;document.getElementById('modal-overlay').style.display='flex'}
+function closeModal(){document.getElementById('modal-overlay').style.display='none'}
+</script>
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:12px;padding:28px;width:400px;max-width:calc(100vw - 32px);box-shadow:0 8px 32px rgba(0,0,0,.18)">
+<h3 id="modal-title" style="font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:20px"></h3>
+<div id="modal-body"></div>
+<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px">
+<button onclick="closeModal()" style="padding:8px 20px;border:1px solid #ddd;border-radius:6px;background:#fff;cursor:pointer;font-size:14px;color:#666">取消</button>
+<button id="modal-confirm-btn" style="padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:500"></button>
+</div></div></div>
+</body>
+</html>
